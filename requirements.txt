@@ -1,0 +1,35 @@
+# requirements
+# pip freeze > requirements.txt
+
+dash==1.0.0
+dash-core-components==1.0.0
+dash-html-components==1.0.0
+dash-renderer==1.0.0
+dash-table==4.0.0
+DateTime==4.3
+decorator==4.4.0
+Flask==1.1.1
+Flask-Compress==1.4.0
+gcloud==0.18.3
+googleapis-common-protos==1.6.0
+gspread==3.1.0
+gunicorn==19.9.0
+httplib2==0.13.0
+idna==2.8
+itsdangerous==1.1.0
+jedi==0.14.1
+Jinja2==2.10.1
+kiwisolver==1.1.0
+lxml==4.3.4
+MarkupSafe==1.1.1
+matplotlib==3.1.1
+matplotlylib==0.1.0
+more-itertools==7.1.0
+numpy==1.16.4
+pandas== 0.24.2
+scikit-learn==0.21.3
+sklearn==0.0
+
+
+
+
