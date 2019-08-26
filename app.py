@@ -1,53 +1,127 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
 import plotly.graph_objs as go
+from data import *
 
-########### Set up the chart
-beers=['Chesapeake Stout', 'Snake Dog IPA', 'Imperial Porter', 'Double Dog IPA']
-ibu_values=[35, 60, 85, 75]
-abv_values=[5.4, 7.1, 9.2, 4.3]
-color1='lightblue'
-color2='darkgreen'
+# The end for data cleaning
 
-bitterness = go.Bar(
-    x=beers,
-    y=ibu_values,
-    name='IBU',
-    marker={'color':color1}
-)
-alcohol = go.Bar(
-    x=beers,
-    y=abv_values,
-    name='ABV',
-    marker={'color':color2}
-)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-beer_data = [bitterness, alcohol]
-beer_layout = go.Layout(
-    barmode='group',
-    title = 'Beer Comparison'
-)
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-beer_fig = go.Figure(data=beer_data, layout=beer_layout)
-
-########### Display the chart
-
-app = dash.Dash()
 server = app.server
 
-app.layout = html.Div(children=[
-    html.H1('Flying Dog Beers'),
-    dcc.Graph(
-        id='flyingdog',
-        figure=beer_fig
-    ),
-    html.A('Code on Github', href='https://github.com/austinlasseter/flying-dog-beers'),
-    html.Br(),
-    html.A('Data Source', href='https://www.flyingdog.com/beers/'),
-    ]
+app.layout = html.Div([
+    html.H4("ACT Student Score", style={"color": "Black", "textAlign": 'center'}),
+    html.Div([
+        html.Div([
+            dcc.Dropdown(
+                id='student',
+                options=[{'label': i, 'value': i} for i in names],
+                value=f'{names[0]}'
+            )
+        ],
+            style={'width': '45%', 'display': 'inline-block'}
+        ),
+    ]),
+
+    dcc.Graph(id='sd_grade'),
+
+    html.Hr(),
+
+    html.H4("ACT Subject Score", style={"color": "Black", "textAlign": 'center'}),
+
+    html.Div([
+        html.Div([
+            dcc.RadioItems(
+                id='subject',
+                options=[{'label': i, 'value': i} for i in columns],
+                value='Math',
+                labelStyle={'display': 'inline-block'}
+            )
+        ],
+            style={'width': '60%', 'display': 'inline-block'}
+        )
+    ]),
+
+    dcc.Graph(id="subject_grade"),
+
+    html.Hr(),
+
+    html.H6("Enter Diagnostic Test Result", style={"coler": "Black", "textAlign": "center"}),
+
+    html.Table([
+        html.Tr([
+            html.Td(['Enter English below']),
+            html.Td(["Enter Math below"]),
+            html.Td(['Enter reading below'])
+        ])
+    ]),
+
+
+    html.Div([
+        dcc.Input(id='eng-in', value='32', type='text'),
+        dcc.Input(id='math-in', value='33', type='text'),
+        dcc.Input(id='reading-in', value='34', type='text')
+
+    ]),
+
+    html.Div(html.Div(id='out'))
+
+
+
+])
+
+# style={'columnCount': 2})
+
+
+@app.callback(
+    Output('sd_grade', 'figure'),
+    [Input('student', 'value')]
+            )
+def update_graph(student_name):
+
+    return {
+        'data': [
+            go.Bar(
+                x=df.index,
+                y=df[f"{student_name}"]
+            )
+
+        ]
+    }
+
+
+@app.callback(
+     Output('subject_grade', 'figure'),
+    [Input("subject", "value")]
+            )
+def update_graph2(subject_name):
+
+    return{
+        'data': [
+            go.Line(
+                y=df_sd[f"{subject_name}"],
+                x=df_sd["Name"]
+            )
+        ]
+    }
+
+
+@app.callback(
+    Output(component_id='out', component_property='children'),
+    [Input('eng-in','value'), Input('math-in', 'value'),
+     Input('reading-in','value')]
 )
+def update_output_div(eng, math, reading):
+    test_score = [[eng, math, reading]]
+    pred_science = rfModel.predict(test_score)
+
+    return 'Future Science Score :  "{0}" '.format(pred_science.round(0))
+
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
 
