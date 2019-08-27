@@ -82,7 +82,7 @@ app.layout = html.Div([
             dcc.RadioItems(
                 id='sd-id',
                 options=[{'label': i, 'value': i} for i in sd_ans.columns],
-                value='461',
+                value=sd_ans.columns[0],
                 labelStyle={'display': 'inline-block'}
             )
         ]),
