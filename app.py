@@ -1,9 +1,12 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table as dt
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from data import *
+from subject import *
+
 
 # The end for data cleaning
 
@@ -60,7 +63,6 @@ app.layout = html.Div([
         ])
     ]),
 
-
     html.Div([
         dcc.Input(id='eng-in', value='32', type='text'),
         dcc.Input(id='math-in', value='33', type='text'),
@@ -68,11 +70,30 @@ app.layout = html.Div([
 
     ]),
 
-    html.Div(html.Div(id='out'))
+    html.Div(html.Div(id='pred-out')),
 
+    html.Hr(),
+
+    html.H6("Student Test Report", style={"coler": "Black", "textAlign": "center"}),
+
+    html.Table([
+        html.Tr([
+            html.Td(['Enter Student ID']),
+            dcc.RadioItems(
+                id='sd-id',
+                options=[{'label': i, 'value': i} for i in sd_ans.columns],
+                value='461',
+                labelStyle={'display': 'inline-block'}
+            )
+        ]),
+        html.Div(html.Div(id="test-out"))
+    ]),
+
+  #  html.Div(html.Div(id="test-out")),
 
 
 ])
+
 
 # style={'columnCount': 2})
 
@@ -80,9 +101,8 @@ app.layout = html.Div([
 @app.callback(
     Output('sd_grade', 'figure'),
     [Input('student', 'value')]
-            )
+)
 def update_graph(student_name):
-
     return {
         'data': [
             go.Bar(
@@ -95,12 +115,11 @@ def update_graph(student_name):
 
 
 @app.callback(
-     Output('subject_grade', 'figure'),
+    Output('subject_grade', 'figure'),
     [Input("subject", "value")]
-            )
+)
 def update_graph2(subject_name):
-
-    return{
+    return {
         'data': [
             go.Line(
                 y=df_sd[f"{subject_name}"],
@@ -111,9 +130,9 @@ def update_graph2(subject_name):
 
 
 @app.callback(
-    Output(component_id='out', component_property='children'),
-    [Input('eng-in','value'), Input('math-in', 'value'),
-     Input('reading-in','value')]
+    Output(component_id='pred-out', component_property='children'),
+    [Input('eng-in', 'value'), Input('math-in', 'value'),
+     Input('reading-in', 'value')]
 )
 def update_output_div(eng, math, reading):
     test_score = [[eng, math, reading]]
@@ -122,6 +141,25 @@ def update_output_div(eng, math, reading):
     return 'Future Science Score :  "{0}" '.format(pred_science.round(0))
 
 
+@app.callback(
+    Output(component_id='test-out', component_property='children'),
+    [Input('sd-id', 'value')]
+)
+def update_output_div(sd_id):
+    df_math, math_grade = math_table(math_ans,sd_ans,int(sd_id))
+    df_math.columns = [str(sd_id),"ANS","Grade"]
+
+    return html.Div([
+        dt.DataTable(
+            data=df_math.to_dict("records"),
+            columns=[{'id': c, 'name': c} for c in df_math.columns]
+        ),
+        dt.DataTable(
+            data=math_grade.to_dict("records"),
+            columns=[{'id': c, 'name': c} for c in math_grade.columns]
+        )
+    ])
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
-
